@@ -1,0 +1,13 @@
+{
+  "groupName": "Spitalstrasse 13",
+  "srfUrl": "https://wmtippspiel.srf.ch/communities/44369",
+  "players": [
+    { "id": "p1", "name": "Markus L" },
+    { "id": "p2", "name": "Jasmin Zihlmann" },
+    { "id": "p3", "name": "Uschi L" },
+    { "id": "p4", "name": "Marco L" }
+  ],
+  "snapshots": [
+    { "date": "2026-06-18", "points": { "p1": 108, "p2": 99, "p3": 88, "p4": 73 } }
+  ]
+}

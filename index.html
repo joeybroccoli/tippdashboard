@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<title>Tippgruppe Rangliste</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600;700&family=Share+Tech+Mono&display=swap');
+
+  :root{
+    --bg:#0B1F17;
+    --panel:#122B20;
+    --line:#27493A;
+    --ink:#F4F4EC;
+    --muted:#8FA89A;
+    --gold:#D9A93B;
+    --red:#D7263D;
+    --radius:10px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:'Inter',sans-serif;}
+  body{min-height:100vh;}
+  #app{max-width:920px;margin:0 auto;padding:24px 18px 60px;}
+
+  .mono{font-family:'Share Tech Mono',monospace;letter-spacing:0.5px;}
+  a{color:var(--gold);text-decoration:none;}
+  a:hover{text-decoration:underline;}
+
+  header.top{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;border-bottom:1px solid var(--line);padding-bottom:16px;margin-bottom:22px;flex-wrap:wrap;}
+  .eyebrow{font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:2.5px;text-transform:uppercase;color:var(--muted);margin:0 0 4px;}
+  h1{font-family:'Oswald',sans-serif;font-weight:600;text-transform:uppercase;letter-spacing:1px;font-size:28px;margin:0;}
+  .src-link{font-size:12px;color:var(--muted);}
+  .src-link a{font-size:12px;}
+
+  .stat-strip{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:26px;}
+  .stat-card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px;}
+  .stat-label{font-family:'Oswald',sans-serif;font-size:10.5px;letter-spacing:1.8px;text-transform:uppercase;color:var(--muted);margin:0 0 8px;}
+  .stat-value{font-size:19px;font-weight:600;line-height:1.25;}
+  .stat-value .mono{font-size:18px;color:var(--gold);}
+  .stat-sub{font-size:12px;color:var(--muted);margin-top:3px;}
+  .jump-up{color:#7FD9A0;}
+
+  section{margin-bottom:30px;}
+  .section-head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px;}
+  h2{font-family:'Oswald',sans-serif;font-weight:600;text-transform:uppercase;letter-spacing:1px;font-size:15px;margin:0;color:var(--ink);}
+  .hint{font-size:12px;color:var(--muted);}
+
+  .board{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;}
+  table{width:100%;border-collapse:collapse;font-size:14px;}
+  thead th{text-align:left;font-family:'Oswald',sans-serif;font-size:10.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);padding:10px 14px;border-bottom:1px solid var(--line);}
+  tbody td{padding:10px 14px;border-bottom:1px solid var(--line);}
+  tbody tr:last-child td{border-bottom:none;}
+  td.points,th.points{text-align:right;}
+  td.delta,th.delta{text-align:right;width:70px;}
+  .rank-badge{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;border:1px solid var(--line);font-family:'Oswald',sans-serif;font-size:12px;font-weight:600;}
+  .rank-1{border-color:var(--gold);color:var(--gold);}
+  .delta-pos{color:#7FD9A0;}
+  .delta-neg{color:var(--red);}
+  .delta-zero{color:var(--muted);}
+
+  .chart-wrap{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:16px;height:320px;}
+
+  .panel-toggle{background:transparent;border:1px solid var(--line);color:var(--ink);font-family:'Oswald',sans-serif;font-size:11.5px;letter-spacing:1px;text-transform:uppercase;padding:8px 14px;border-radius:7px;cursor:pointer;}
+  .panel-toggle:hover{border-color:var(--gold);color:var(--gold);}
+  .panel-toggle:focus-visible, button:focus-visible, input:focus-visible{outline:2px solid var(--gold);outline-offset:2px;}
+
+  .snapshot-form{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:16px;display:none;}
+  .snapshot-form.open{display:block;}
+  .form-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px dashed var(--line);}
+  .form-row:last-of-type{border-bottom:none;}
+  .form-row label{font-size:14px;}
+  .form-row input[type=number]{width:90px;background:var(--bg);border:1px solid var(--line);color:var(--ink);border-radius:6px;padding:6px 8px;font-family:'Share Tech Mono',monospace;font-size:14px;text-align:right;}
+  .date-row{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+  .date-row input[type=date]{background:var(--bg);border:1px solid var(--line);color:var(--ink);border-radius:6px;padding:6px 8px;font-family:'Inter',sans-serif;}
+  .form-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:14px;}
+  .btn-primary{background:var(--gold);color:#1A1305;border:none;font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:1px;text-transform:uppercase;padding:9px 16px;border-radius:7px;cursor:pointer;font-weight:600;}
+  .btn-primary:hover{filter:brightness(1.08);}
+  .btn-ghost{background:transparent;color:var(--muted);border:1px solid var(--line);font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:1px;text-transform:uppercase;padding:9px 16px;border-radius:7px;cursor:pointer;}
+
+  .players-edit{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;}
+  .player-chip{display:flex;align-items:center;gap:6px;background:var(--bg);border:1px solid var(--line);border-radius:20px;padding:5px 6px 5px 12px;font-size:13px;}
+  .player-chip button{background:none;border:none;color:var(--muted);cursor:pointer;font-size:14px;padding:2px 8px;border-radius:50%;}
+  .player-chip button:hover{color:var(--red);}
+  .add-player-row{display:flex;gap:8px;margin-top:12px;}
+  .add-player-row input{flex:1;background:var(--bg);border:1px solid var(--line);color:var(--ink);border-radius:6px;padding:8px 10px;font-family:'Inter',sans-serif;}
+
+  .export-banner{background:#2A1F0E;border:1px solid var(--gold);border-radius:var(--radius);padding:16px;margin-bottom:30px;}
+  .export-banner p{margin:0 0 10px;font-size:13.5px;line-height:1.6;}
+  .export-banner .steps{margin:0 0 14px;padding-left:18px;font-size:13px;color:var(--muted);line-height:1.7;}
+  .export-actions{display:flex;gap:10px;flex-wrap:wrap;}
+
+  footer{margin-top:36px;border-top:1px solid var(--line);padding-top:14px;font-size:12px;color:var(--muted);line-height:1.6;}
+
+  @media (max-width:640px){
+    .stat-strip{grid-template-columns:1fr;}
+    h1{font-size:22px;}
+    .board{overflow-x:auto;}
+  }
+  @media (prefers-reduced-motion: reduce){
+    *{transition:none !important;}
+  }
+</style>
+</head>
+<body>
+<div id="app">Lädt…</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<script>
+(function(){
+
+  var DEFAULT_STATE = {
+    groupName: "Spitalstrasse 13",
+    srfUrl: "https://wmtippspiel.srf.ch/communities/44369",
+    players: [
+      { id: "p1", name: "Markus L" },
+      { id: "p2", name: "Jasmin Zihlmann" },
+      { id: "p3", name: "Uschi L" },
+      { id: "p4", name: "Marco L" }
+    ],
+    snapshots: [
+      { date: "2026-06-18", points: { p1: 108, p2: 99, p3: 88, p4: 73 } }
+    ]
+  };
+
+  var LINE_COLORS = ["#D9A93B", "#5FB4D9", "#D7263D", "#7FD9A0", "#B07FD9", "#E08E45", "#5FD9C9", "#D95FA3"];
+
+  var state = null;
+  var loadedState = null; // letzter bekannter Stand aus data.json, zum Vergleich (dirty-check)
+  var chartInstance = null;
+  var formOpen = false;
+
+  function uid(){ return 'p' + Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
+
+  function todayISO(){
+    var d = new Date();
+    var m = String(d.getMonth()+1).padStart(2,'0');
+    var day = String(d.getDate()).padStart(2,'0');
+    return d.getFullYear() + '-' + m + '-' + day;
+  }
+
+  function fmtDate(iso){
+    var parts = iso.split('-');
+    return parts[2] + '.' + parts[1] + '.' + parts[0].slice(2);
+  }
+
+  function isDirty(){
+    return JSON.stringify(state) !== JSON.stringify(loadedState);
+  }
+
+  async function loadState(){
+    try{
+      var res = await fetch('./data.json?t=' + Date.now());
+      if(res.ok){
+        var data = await res.json();
+        return data;
+      }
+    }catch(e){ /* Datei fehlt oder Fetch nicht möglich -> Default verwenden */ }
+    return JSON.parse(JSON.stringify(DEFAULT_STATE));
+  }
+
+  function sortedSnapshots(){
+    return state.snapshots.slice().sort(function(a,b){ return a.date.localeCompare(b.date); });
+  }
+  function latestSnapshot(){
+    var s = sortedSnapshots();
+    return s.length ? s[s.length-1] : null;
+  }
+  function previousSnapshot(){
+    var s = sortedSnapshots();
+    return s.length > 1 ? s[s.length-2] : null;
+  }
+
+  function rankedRows(){
+    var latest = latestSnapshot();
+    var prev = previousSnapshot();
+    if(!latest) return [];
+    var rows = state.players.map(function(p){
+      var pts = latest.points[p.id];
+      var hasPts = (pts !== undefined && pts !== null);
+      var prevPts = prev ? prev.points[p.id] : undefined;
+      var delta = (hasPts && prevPts !== undefined && prevPts !== null) ? (pts - prevPts) : null;
+      return { player: p, points: hasPts ? pts : null, delta: delta };
+    });
+    rows.sort(function(a,b){
+      if(a.points===null) return 1;
+      if(b.points===null) return -1;
+      return b.points - a.points;
+    });
+    return rows;
+  }
+
+  function biggestJump(){
+    var rows = rankedRows().filter(function(r){ return r.delta !== null; });
+    if(!rows.length) return null;
+    rows.sort(function(a,b){ return b.delta - a.delta; });
+    return rows[0];
+  }
+
+  function render(){
+    var app = document.getElementById('app');
+    var rows = rankedRows();
+    var leader = rows.length ? rows[0] : null;
+    var jump = biggestJump();
+    var snapshots = sortedSnapshots();
+    var dirty = isDirty();
+
+    var html = '';
+
+    html += '<header class="top">';
+    html += '  <div><p class="eyebrow">WM 2026 &middot; Tippspiel</p><h1>' + escapeHtml(state.groupName) + '</h1></div>';
+    html += '  <div class="src-link">Quelle: <a href="' + escapeAttr(state.srfUrl) + '" target="_blank" rel="noopener">SRF-Tippspiel ↗</a></div>';
+    html += '</header>';
+
+    if(dirty){
+      html += '<div class="export-banner">';
+      html += '  <p><strong>Diese Änderung ist noch nicht für alle sichtbar.</strong> Sie lebt nur in deinem Browser, bis du die aktualisierte Datei auf GitHub hochlädst.</p>';
+      html += '  <ol class="steps">';
+      html += '    <li>Klick auf "data.json herunterladen"</li>';
+      html += '    <li>Geh in dein GitHub-Repo &rarr; "Add file" &rarr; "Upload files"</li>';
+      html += '    <li>Zieh die heruntergeladene Datei hinein (ersetzt automatisch die alte)</li>';
+      html += '    <li>Unten "Commit changes" klicken &mdash; nach ca. 30&ndash;60 Sek. sehen alle den neuen Stand</li>';
+      html += '  </ol>';
+      html += '  <div class="export-actions"><button class="btn-primary" id="downloadBtn">data.json herunterladen</button><button class="btn-ghost" id="copyBtn">Inhalt stattdessen kopieren</button></div>';
+      html += '</div>';
+    }
+
+    html += '<div class="stat-strip">';
+    html += statCard('Spitzenreiter', leader ? escapeHtml(leader.player.name) : '–', leader ? ('<span class="mono">' + leader.points + ' Pkt</span>') : '');
+    html += statCard('Grösster Sprung', jump ? escapeHtml(jump.player.name) : '–', jump ? ('<span class="mono jump-up">+' + jump.delta + ' Pkt</span> seit letztem Snapshot') : 'noch kein Vergleich');
+    html += statCard('Snapshots gesammelt', String(snapshots.length), snapshots.length ? ('letztes Update: ' + fmtDate(snapshots[snapshots.length-1].date)) : '');
+    html += '</div>';
+
+    html += '<section>';
+    html += '  <div class="section-head"><h2>Aktuelle Rangliste</h2></div>';
+    html += '  <div class="board"><table><thead><tr><th>Rang</th><th>Name</th><th class="points">Punkte</th><th class="delta">+/-</th></tr></thead><tbody>';
+    if(!rows.length){
+      html += '<tr><td colspan="4" style="color:var(--muted);padding:18px 14px;">Noch keine Daten. Erstelle unten den ersten Snapshot.</td></tr>';
+    } else {
+      rows.forEach(function(r, i){
+        var rank = i+1;
+        var deltaHtml = '–';
+        if(r.delta !== null){
+          if(r.delta > 0) deltaHtml = '<span class="delta-pos">+' + r.delta + '</span>';
+          else if(r.delta < 0) deltaHtml = '<span class="delta-neg">' + r.delta + '</span>';
+          else deltaHtml = '<span class="delta-zero">0</span>';
+        }
+        html += '<tr>';
+        html += '<td><span class="rank-badge' + (rank===1?' rank-1':'') + '">' + rank + '</span></td>';
+        html += '<td>' + escapeHtml(r.player.name) + '</td>';
+        html += '<td class="points mono">' + (r.points===null? '–' : r.points + ' Pkt') + '</td>';
+        html += '<td class="delta">' + deltaHtml + '</td>';
+        html += '</tr>';
+      });
+    }
+    html += '  </tbody></table></div>';
+    html += '</section>';
+
+    html += '<section>';
+    html += '  <div class="section-head"><h2>Punkteverlauf pro Spieler</h2><span class="hint">' + (snapshots.length>1 ? 'Klick auf einen Namen in der Legende, um ihn aus-/einzublenden' : 'Erst ab zwei Snapshots sichtbar') + '</span></div>';
+    html += '  <div class="chart-wrap"><canvas id="chartCanvas"></canvas></div>';
+    html += '</section>';
+
+    html += '<section>';
+    html += '  <div class="section-head"><h2>Snapshot &amp; Spieler verwalten</h2>';
+    html += '    <button class="panel-toggle" id="toggleFormBtn">' + (formOpen ? 'Schliessen' : 'Neuer Snapshot') + '</button>';
+    html += '  </div>';
+    html += '  <div class="snapshot-form' + (formOpen?' open':'') + '" id="snapshotForm">';
+    html += '    <div class="date-row"><label for="snapDate" style="color:var(--muted);font-size:13px;">Datum</label><input type="date" id="snapDate" value="' + todayISO() + '"></div>';
+    state.players.forEach(function(p){
+      var latest = latestSnapshot();
+      var prefill = (latest && latest.points[p.id] !== undefined) ? latest.points[p.id] : 0;
+      html += '<div class="form-row"><label>' + escapeHtml(p.name) + '</label><input type="number" min="0" step="1" class="snap-input" data-player="' + p.id + '" value="' + prefill + '"></div>';
+    });
+    if(!state.players.length){
+      html += '<p class="hint">Füge zuerst unten Spieler hinzu.</p>';
+    }
+    html += '    <div class="form-actions"><button class="btn-ghost" id="cancelSnapBtn">Abbrechen</button><button class="btn-primary" id="saveSnapBtn">Snapshot übernehmen</button></div>';
+    html += '    <hr style="border:none;border-top:1px solid var(--line);margin:18px 0;">';
+    html += '    <p class="stat-label" style="margin-bottom:8px;">Spieler</p>';
+    html += '    <div class="players-edit">';
+    state.players.forEach(function(p){
+      html += '<div class="player-chip">' + escapeHtml(p.name) + '<button data-remove="' + p.id + '" title="Entfernen" aria-label="Spieler entfernen">×</button></div>';
+    });
+    html += '    </div>';
+    html += '    <div class="add-player-row"><input type="text" id="newPlayerInput" placeholder="Name neuer Spieler:in"><button class="btn-ghost" id="addPlayerBtn">+ Hinzufügen</button></div>';
+    html += '  </div>';
+    html += '</section>';
+
+    html += '<footer>Diese Seite ist statisch und braucht kein Konto. Werte liest du auf der <a href="' + escapeAttr(state.srfUrl) + '" target="_blank" rel="noopener">SRF-Seite</a> ab und trägst sie hier ein; gespeichert wird über die Datei data.json in deinem GitHub-Repo.</footer>';
+
+    app.innerHTML = html;
+    attachHandlers();
+    renderChart(rows, snapshots);
+  }
+
+  function statCard(label, value, sub){
+    return '<div class="stat-card"><p class="stat-label">' + label + '</p><div class="stat-value">' + value + '</div><div class="stat-sub">' + (sub||'') + '</div></div>';
+  }
+  function escapeHtml(str){
+    return String(str).replace(/[&<>"']/g, function(c){
+      return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c];
+    });
+  }
+  function escapeAttr(str){ return escapeHtml(str); }
+
+  function renderChart(rows, snapshots){
+    var canvas = document.getElementById('chartCanvas');
+    if(!canvas || !window.Chart) return;
+    var ctx = canvas.getContext('2d');
+    var labels = snapshots.map(function(s){ return fmtDate(s.date); });
+    var datasets = state.players.map(function(p, idx){
+      var color = LINE_COLORS[idx % LINE_COLORS.length];
+      return {
+        label: p.name,
+        data: snapshots.map(function(s){
+          var v = s.points[p.id];
+          return (v===undefined || v===null) ? null : v;
+        }),
+        borderColor: color, backgroundColor: color,
+        spanGaps: true, tension: 0.25, pointRadius: 3, pointHoverRadius: 5, borderWidth: 2
+      };
+    });
+    if(chartInstance){ chartInstance.destroy(); }
+    chartInstance = new Chart(ctx, {
+      type: 'line',
+      data: { labels: labels, datasets: datasets },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        interaction: { mode: 'nearest', intersect: false },
+        scales: {
+          x: { ticks: { color: '#8FA89A' }, grid: { color: '#27493A' } },
+          y: { ticks: { color: '#8FA89A' }, grid: { color: '#27493A' }, beginAtZero: true }
+        },
+        plugins: {
+          legend: {
+            labels: { color: '#F4F4EC', font: { family: 'Inter' } },
+            onClick: function(e, legendItem, legend){
+              var index = legendItem.datasetIndex;
+              var ci = legend.chart;
+              var meta = ci.getDatasetMeta(index);
+              meta.hidden = meta.hidden===null ? !ci.data.datasets[index].hidden : !meta.hidden;
+              ci.update();
+            }
+          },
+          tooltip: { mode: 'nearest', intersect: false }
+        }
+      }
+    });
+  }
+
+  function downloadDataJson(){
+    var blob = new Blob([JSON.stringify(state, null, 2)], {type:'application/json'});
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url; a.download = 'data.json';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  async function copyDataJson(){
+    var text = JSON.stringify(state, null, 2);
+    try{
+      await navigator.clipboard.writeText(text);
+      alert('Inhalt kopiert. Füge ihn in data.json auf GitHub ein (Stift-Symbol -> alles ersetzen -> Commit).');
+    }catch(e){
+      alert('Kopieren hat nicht funktioniert. Nutze stattdessen den Download-Button.');
+    }
+  }
+
+  function attachHandlers(){
+    var dl = document.getElementById('downloadBtn');
+    if(dl){ dl.onclick = downloadDataJson; }
+    var cp = document.getElementById('copyBtn');
+    if(cp){ cp.onclick = copyDataJson; }
+
+    var toggleBtn = document.getElementById('toggleFormBtn');
+    if(toggleBtn){ toggleBtn.onclick = function(){ formOpen = !formOpen; render(); }; }
+    var cancelBtn = document.getElementById('cancelSnapBtn');
+    if(cancelBtn){ cancelBtn.onclick = function(){ formOpen = false; render(); }; }
+
+    var saveBtn = document.getElementById('saveSnapBtn');
+    if(saveBtn){
+      saveBtn.onclick = function(){
+        var dateInput = document.getElementById('snapDate');
+        var date = dateInput ? dateInput.value : todayISO();
+        if(!date){ alert('Bitte ein Datum wählen.'); return; }
+        var inputs = document.querySelectorAll('.snap-input');
+        var points = {};
+        var invalid = false;
+        inputs.forEach(function(inp){
+          var val = parseInt(inp.value, 10);
+          if(isNaN(val) || val < 0){ invalid = true; }
+          points[inp.getAttribute('data-player')] = isNaN(val) ? 0 : val;
+        });
+        if(invalid){ alert('Bitte nur gültige, nicht-negative Punktzahlen eingeben.'); return; }
+
+        var existingIdx = state.snapshots.findIndex(function(s){ return s.date === date; });
+        if(existingIdx >= 0){
+          var ok = confirm('Für ' + fmtDate(date) + ' existiert bereits ein Snapshot. Überschreiben?');
+          if(!ok) return;
+          state.snapshots[existingIdx] = { date: date, points: points };
+        } else {
+          state.snapshots.push({ date: date, points: points });
+        }
+        formOpen = false;
+        render();
+      };
+    }
+
+    var addPlayerBtn = document.getElementById('addPlayerBtn');
+    if(addPlayerBtn){
+      addPlayerBtn.onclick = function(){
+        var input = document.getElementById('newPlayerInput');
+        var name = input ? input.value.trim() : '';
+        if(!name) return;
+        state.players.push({ id: uid(), name: name });
+        render();
+        formOpen = true;
+      };
+    }
+
+    document.querySelectorAll('[data-remove]').forEach(function(btn){
+      btn.onclick = function(){
+        var id = btn.getAttribute('data-remove');
+        var player = state.players.find(function(p){ return p.id===id; });
+        if(!player) return;
+        var ok = confirm(player.name + ' aus der Spielerliste entfernen?');
+        if(!ok) return;
+        state.players = state.players.filter(function(p){ return p.id!==id; });
+        formOpen = true;
+        render();
+      };
+    });
+  }
+
+  (async function init(){
+    var loaded = await loadState();
+    loadedState = JSON.parse(JSON.stringify(loaded));
+    state = JSON.parse(JSON.stringify(loaded));
+    render();
+  })();
+
+})();
+</script>
+</body>
+</html>
