@@ -1,33 +1,32 @@
-shot · YML
-name: Tippdashboard Snapshot
- 
+name: Tippgruppe Snapshot
+
 on:
   schedule:
-    # 07:00 UTC = 07:00 Europe/Zurich waehrend der Sommerzeit (gilt fuer die WM-Zeit im Juni/Juli)
+    # 05:00 UTC = 07:00 Europe/Zurich waehrend der Sommerzeit (gilt fuer die WM-Zeit im Juni/Juli)
     - cron: '0 5 * * *'
   workflow_dispatch: {}
- 
+
 permissions:
   contents: write
- 
+
 jobs:
   snapshot:
     runs-on: ubuntu-latest
     steps:
       - name: Repo auschecken
         uses: actions/checkout@v4
- 
+
       - name: Python einrichten
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
- 
+
       - name: Abhaengigkeiten installieren
         run: pip install requests beautifulsoup4
- 
+
       - name: Snapshot erstellen
         run: python scraper.py
- 
+
       - name: Aenderungen committen
         run: |
           git config user.name "Tippgruppe Bot"
