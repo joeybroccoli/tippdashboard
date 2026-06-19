@@ -2,7 +2,6 @@ name: Tippgruppe Snapshot
 
 on:
   schedule:
-    # 05:00 UTC = 07:00 Europe/Zurich waehrend der Sommerzeit (gilt fuer die WM-Zeit im Juni/Juli)
     - cron: '0 5 * * *'
   workflow_dispatch: {}
 
